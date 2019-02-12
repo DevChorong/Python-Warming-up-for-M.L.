@@ -361,7 +361,7 @@ if __name__ == "__main__":
 10번 문서(기준)와 유사도가 가장큰 즉 가장 유사한 문서 n개를 뽑는 함수이다.
 
 ```{python}
-#비교후 유사도가 가장 큰 값 10개를 정리하는 함수
+#비교후 유사도가 가장 큰 값 n개를 정리하는 함수
 def get_top_n_similarity_news(similarity_score, n):
     import operator
     x = { i : v for i, v in enumerate(similarity_score)}
@@ -535,7 +535,7 @@ def get_similarity_score(x_vector, source):
         similarity_list.append(get_cosine_similarity(source_vector, target_vector))
     return similarity_list
 
-#비교후 유사도가 가장 큰 값 10개를 정리하는 함수
+#비교후 유사도가 가장 큰 값 n개를 정리하는 함수
 def get_top_n_similarity_news(similarity_score, n):
     import operator
     x = { i : v for i, v in enumerate(similarity_score)}
