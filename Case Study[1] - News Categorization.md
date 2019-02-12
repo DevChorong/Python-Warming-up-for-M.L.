@@ -278,13 +278,304 @@ if __name__ == "__main__":
 
 이제 10개의 파일을 중심으로 서로 비교하는 부분이다.  앞에까지는 dict와 corpus를 구성하는 단계였다면 사실상 이 프로그램의 메인이라고 볼 수 있다.
 
+![cosine similarity](./image/Cosine Similarity.png)
+
+다음은 코사인 유사도 공식이다. 암기할 필요는 없지만 하나의 Trick이니까 알아 두도록 하자. 다음 소스코드는
+
+위 공식을 코드화 한 코드이다.
+
+```{python}
+import math
+def get_cosine_similarity(v1 ,v2):
+    "compute cosine similarity of v1 to v2 : (v1 dot v2) / {||v1|| * ||v2||}"
+    sumxx, sumxy, sumyy = 0, 0, 0
+    for i in range(len(v1)):
+        x = v1[i]; y = v2[i]
+        sumxx += x*x
+        sumxy += x*y
+        sumyy += y*y
+    return sumxy/math.sqrt(sumxx*sumyy) 
+```
+
+다음으로 우리가 갖고있는 80개의 문서와 10번 문서를 각각 비교하여 얼마나 비슷한지 유사도를 측정하는 함수이다.
+
+```{python}
+#비교후 유사도 결과를 정리하는 함수
+def get_similarity_score(x_vector, source):
+    source_vector = x_vector[source]
+    similarity_list = []
+    for target_vector in x_vector:
+        similarity_list.append(get_cosine_similarity(source_vector, target_vector))
+    return similarity_list
+```
+
+위 함수를 보면 souce(기준)문서와 나머자 80개의 문서를 각각 비교한뒤에 similarity_list 라는 배열에다가 유사도를 append하는 방식이다
+
+총 similarity_list는 80개의 배열요소를 갖는다. 이제 확인 및 적용을 위해서 main 소스로 가자
+
+```{python}
+    #비교의 기준이 되는 문서
+    source_number = 10
+    
+    result =[]
+
+    for i in range(80):
+        source_number = i
+        similarity_score = get_similarity_score(x_vector, source_number)
+
+    print(similarity_score)
+```
+
+다음의 내용을 main 소스에 넣어준다 그렇게 되면 총 80개의 문서의 유사도가 측정되어 print 된다.
+
+따라서 다음을 삽입한 processing code 는 다음과 같다.
+
+```{python}
+if __name__ == "__main__":
+    dir_name = "news_data"
+    file_list = get_file_list(dir_name)
+    file_list = [os.path.join(dir_name, file_name) for file_name in file_list]
+    x_text, y_class = get_conetents(file_list)
+    corpus = get_corpus_dict(x_text)
+    print("Number of words : {0}".format(len(corpus)))
+    x_vector = get_count_vector(x_text, corpus)
+    print(x_vector[0])
+    
+    #비교의 기준이 되는 문서
+    source_number = 10
+    
+    result =[]
+    for i in range(80):
+        source_number = i
+        similarity_score = get_similarity_score(x_vector, source_number)
+        
+    print(similarity_score)
+```
 
 
 
+### 6. 얼마나 맞는지 측정하기
+
+다음은 이어서 비교결과를 정리하는 함수이다.
+
+10번 문서(기준)와 유사도가 가장큰 즉 가장 유사한 문서 n개를 뽑는 함수이다.
+
+```{python}
+#비교후 유사도가 가장 큰 값 10개를 정리하는 함수
+def get_top_n_similarity_news(similarity_score, n):
+    import operator
+    x = { i : v for i, v in enumerate(similarity_score)}
+    sorted_x = sorted(x.items(), key=operator.itemgetter(1))
+
+    return list(reversed(sorted_x))[1 : n+1]
+```
+
+다음 함수를 보면 인덱스 번호와 dict 타입을 활용해서 유사도가 가장큰 문서의 인덱스(문서번호)를 출력하고 그리고 유사도를 보여주는 방식으로 총 n개의 유사한 문서를 출력한다.
+
+이렇게 함수를 만든다음에 다음과 같은 내용을 main 소스에 추가한다.
+
+```{python}
+similarity_news = get_top_n_similarity_news(similarity_score, 10)
+```
+
+다음은 위 소스코드를 추가한 총 main processing 소스코드이다.
+
+```{python}
+if __name__ == "__main__":
+    dir_name = "news_data"
+    file_list = get_file_list(dir_name)
+    file_list = [os.path.join(dir_name, file_name) for file_name in file_list]
+    x_text, y_class = get_conetents(file_list)
+    corpus = get_corpus_dict(x_text)
+    print("Number of words : {0}".format(len(corpus)))
+    x_vector = get_count_vector(x_text, corpus)
+    print(x_vector[0])
+
+    #비교의 기준이 되는 문서
+    source_number = 10
+
+    result =[]
+    for i in range(80):
+        source_number = i
+        similarity_score = get_similarity_score(x_vector, source_number)
+        similarity_news = get_top_n_similarity_news(similarity_score, 10)
+
+    print(similarity_news)
+```
 
 
 
+마지막으로 data 전체가 평균적으로 얼만큼의 유사도를 갖는지 나타내는 함수를 만들어보자.
+
+```{python}
+def get_accuracy(similarity_list, y_class, source_news):
+    source_class = y_class[source_news]
+
+    return sum([source_class == y_class[i[0]] for i in similarity_list]) / len(similarity_list)
+```
+
+다음 함수의 리턴값을 보면 모든 문서의 유사도를 더한다음에 그것을 갯수로 나누어서 평균 값을 구한다.
+
+그리고 다음의 소스코드를 이전의 main 실행 소스에 넣어준다.
+
+```{python}
+		accuracy_score = get_accuracy(similarity_news, y_class, source_number)
+        result.append(accuracy_score)
+
+   print("Total Similarity : {0}%".format((sum(result)/80)*100))
+```
+
+따라서 위의 결과를 총 합한 main processing 소스코드는 다음과 같다.
+
+```{python}
+if __name__ == "__main__":
+    dir_name = "news_data"
+    file_list = get_file_list(dir_name)
+    file_list = [os.path.join(dir_name, file_name) for file_name in file_list]
+    x_text, y_class = get_conetents(file_list)
+    corpus = get_corpus_dict(x_text)
+    print("Number of words : {0}".format(len(corpus)))
+    x_vector = get_count_vector(x_text, corpus)
+
+    result =[]
+    for i in range(80):
+        source_number = i
+        similarity_score = get_similarity_score(x_vector, source_number)
+        similarity_news = get_top_n_similarity_news(similarity_score, 10)
+        accuracy_score = get_accuracy(similarity_news, y_class, source_number)
+        result.append(accuracy_score)
+
+    print("Total Similarity : {0}%".format((sum(result)/80)*100))
+```
 
 
 
+## Final . 총 소스코드 와 실행결과
+
+```{python}
+'''
+2019 - 02 - (09 ~ 12)
+Project name : News Categorization & Measure Average Similarity of Data file
+Type : chapter 1 - Case study
+Join : DevChorong(is Github ID)
+IDE : this program was written in Pycharm
+OS : Windows 10
+'''
+
+import os
+
+#1.파일불러오기 >>  파일들을 다 가져오는 함수
+def get_file_list(dir_name):
+    return os.listdir(dir_name)
+
+#2. 파일별로 내용읽기 >> dict type 을 야구는 0 축구는 1로 설정한다.
+def get_conetents(file_list):
+    x_text = []
+    y_class = []
+    class_dict = { 1: "0" , 2: "0", 3: "0" , 4: "0" , 5: "1" , 6: "1" , 7: "1" , 8: "1"}
+
+    for file_name in file_list:
+        try:
+            f = open(file_name, "r", encoding="cp949")
+            category = int(file_name.split(os.sep)[1].split("_")[0])
+            y_class.append(class_dict[category])
+            x_text.append(f.read())
+            f.close()
+        except UnicodeDecodeError as e :
+            print(e)
+            print(file_name)
+    return x_text, y_class
+
+#3 Corpus만들기 + 단어별 index 생성하기
+# 아래 함수는 문장에 있는 의미없는 문장부호들을 삭제시켜준다.
+def get_cleaned_text(word):
+    import re
+    word = re.sub('\W+', '', word.lower())
+    return word
+
+def get_corpus_dict(text):
+    text = [sentence.split() for sentence in text]
+    cleaned_words = [get_cleaned_text(word) for words in text for word in words]
+
+    from collections import OrderedDict
+    corpus_dict = OrderedDict()
+    for i, v in enumerate(set(cleaned_words)):
+        corpus_dict[v] = i
+    return corpus_dict
+
+#4. 문서별로 Bag of words vector 생성
+def get_count_vector(text, corpus):
+    text = [sentence.split() for sentence in text]
+    word_number_list = [[corpus[get_cleaned_text(word)] for word in words] for words in text]
+    X_vector = [[0 for _ in range(len(corpus))] for x in range(len(text))]
+
+    for i, text in enumerate(word_number_list):
+        for word_number in text:
+            X_vector[i][word_number] += 1
+    return X_vector
+
+#5. 비교하기 단계
+#먼저 유사도를 측정하기위해서 "Cosine similarity"공식을 소스코드화 한다.
+import math
+def get_cosine_similarity(v1 ,v2):
+    "compute cosine similarity of v1 to v2 : (v1 dot v2) / {||v1|| * ||v2||}"
+    sumxx, sumxy, sumyy = 0, 0, 0
+    for i in range(len(v1)):
+        x = v1[i]; y = v2[i]
+        sumxx += x*x
+        sumxy += x*y
+        sumyy += y*y
+    return sumxy/math.sqrt(sumxx*sumyy)
+
+# 6. 비교후 유사도 결과를 정리하는 함수
+def get_similarity_score(x_vector, source):
+    source_vector = x_vector[source]
+    similarity_list = []
+    for target_vector in x_vector:
+        similarity_list.append(get_cosine_similarity(source_vector, target_vector))
+    return similarity_list
+
+#비교후 유사도가 가장 큰 값 10개를 정리하는 함수
+def get_top_n_similarity_news(similarity_score, n):
+    import operator
+    x = { i : v for i, v in enumerate(similarity_score)}
+    sorted_x = sorted(x.items(), key=operator.itemgetter(1))
+
+    return list(reversed(sorted_x))[1 : n+1]
+
+#문서의 평균 유사도를 구하는 함수이다.
+def get_accuracy(similarity_list, y_class, source_news):
+    source_class = y_class[source_news]
+
+    return sum([source_class == y_class[i[0]] for i in similarity_list]) / len(similarity_list)
+
+# 가져온 파일들을 file_list 라는 리스트타입의 변수에 저장하게 된다.
+# 이때 모든 파일들은 상대경로를 갖는데 os 타입에 따라서 구분자가 \ 혹은 / 이므로
+# 프로그램이 구동되는 os에 맞게 join을 해주기 위해서 os.path.join 을 사용한다.
+
+if __name__ == "__main__":
+    dir_name = "news_data"
+    print("Data File Name : {0}".format(dir_name))
+    
+    file_list = get_file_list(dir_name)
+    file_list = [os.path.join(dir_name, file_name) for file_name in file_list]
+    x_text, y_class = get_conetents(file_list)
+    print("Number of Documents : {0}".format(len(x_text)))
+
+    corpus = get_corpus_dict(x_text)
+    print("Number of words : {0}".format(len(corpus)))
+
+    x_vector = get_count_vector(x_text, corpus)
+
+    result =[]
+    for i in range(80):
+        source_number = i
+        similarity_score = get_similarity_score(x_vector, source_number)
+        similarity_news = get_top_n_similarity_news(similarity_score, 10)
+        accuracy_score = get_accuracy(similarity_news, y_class, source_number)
+        result.append(accuracy_score)
+
+    print("Average Similarity : {0}%".format((sum(result)/80)*100))
+    
+```
 
