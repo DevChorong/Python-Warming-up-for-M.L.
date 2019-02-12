@@ -278,7 +278,7 @@ if __name__ == "__main__":
 
 이제 10개의 파일을 중심으로 서로 비교하는 부분이다.  앞에까지는 dict와 corpus를 구성하는 단계였다면 사실상 이 프로그램의 메인이라고 볼 수 있다.
 
-![cosine_similarity](./image/Cosine Similarity.png)
+![cosinesmilarity](./image/Cosine Similarity.jpg)
 
 다음은 코사인 유사도 공식이다. 암기할 필요는 없지만 하나의 Trick이니까 알아 두도록 하자. 다음 소스코드는
 
