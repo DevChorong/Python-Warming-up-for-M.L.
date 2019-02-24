@@ -1,5 +1,5 @@
 If this file successfully connected with github Repository in my ID
 this text file uploaded there
-in this file 3 sentences are included
 
-connection check 2019 - 02 - 24 (sun) in home(seoul) Desk-top 
+[2019 - 02 - 09 (sat) ] connection check in Chorong_laptop
+[2019 - 02 - 24 (sun)] connection check in home(seoul) Desk-top 
