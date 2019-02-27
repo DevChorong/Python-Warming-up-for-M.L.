@@ -98,4 +98,4 @@ f.close()
 
 #### 실행 결과 사진
 
-![](.\[ Image File ]\SalesData_analysis_n_evaluation_Program.JPG)
+![](.\img\SalesData_analysis_n_evaluation_Program.JPG)
