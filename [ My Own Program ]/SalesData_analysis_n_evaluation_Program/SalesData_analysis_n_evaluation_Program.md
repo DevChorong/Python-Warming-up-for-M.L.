@@ -98,4 +98,5 @@ f.close()
 
 #### 실행 결과 사진
 
-![](DataProcessing-Study/img/SalesData_analysis_n_evaluation_Program.JPG)
+![salesdata_analysis_n_evaluation_program](https://user-images.githubusercontent.com/46650069/53516740-56020800-3b10-11e9-8a4f-5bc920095315.JPG)
+
