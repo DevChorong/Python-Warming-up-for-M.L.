@@ -53,4 +53,6 @@ f.close()
 ```
 
 #### 실행결과
+![data_dictionary_serching_result](https://user-images.githubusercontent.com/46650069/53893549-c4474d00-4071-11e9-8fb1-b26dbffc6ad4.JPG)
+
 
